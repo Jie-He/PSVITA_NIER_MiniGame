@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/c/users/jiehe/Documents/Scripts/Vita/Starter/src/font.c
+
+/c/users/jiehe/Documents/Scripts/Vita/Starter/src/main.c
+psp2/kernel/processmgr.h
+-
+psp2/display.h
+-
+psp2/sysmodule.h
+-
+stdio.h
+-
+stdlib.h
+-
+vita2d.h
+-
+
