@@ -1,5 +1,0 @@
-/c/Users/jiehe/Documents/Scripts/Vita/NierAH/build/CMakeFiles/rebuild_cache.dir
-/c/Users/jiehe/Documents/Scripts/Vita/NierAH/build/CMakeFiles/edit_cache.dir
-/c/Users/jiehe/Documents/Scripts/Vita/NierAH/build/CMakeFiles/NierAH.dir
-/c/Users/jiehe/Documents/Scripts/Vita/NierAH/build/CMakeFiles/NierAH.vpk.dir
-/c/Users/jiehe/Documents/Scripts/Vita/NierAH/build/CMakeFiles/NierAH.self.dir
