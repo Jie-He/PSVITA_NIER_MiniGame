@@ -64,6 +64,8 @@ add_executable(${SHORT_NAME}
   src/defs.h
   src/player.h
   src/player.cpp
+  src/bullet.h
+  src/bullet.cpp
   ../common/debugScreen.c
   ../common/font.c
 )

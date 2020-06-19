@@ -37,6 +37,13 @@ enum GAME_STATE{
 	ENDED
 };
 
+// Bullet variants
+enum BClass{
+    PLYBAR, // Player bullet type
+    DESTBE, // Destoryable bullet ( enemy )
+    UNDEST  // Undestoryable bullet
+};
+
 // Default stick offset;
 const float OFFSET_STICK = 127.0f;
 const float OFFSET_DEADZ =  60.0f;

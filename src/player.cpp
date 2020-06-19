@@ -41,5 +41,32 @@ void Player::update(int clx, int cly, int crx, int cry){
 	plx = (plx > SCREEN_WIDTH )? SCREEN_WIDTH  : plx;
 	ply = (ply > SCREEN_HEIGHT)? SCREEN_HEIGHT : ply;
 
-   
+
+    // fire enabler
+    crate = (crate > frate)? frate : (crate + 1); 
+}
+
+void Player::firebt(){
+    // if its re enabled, fire 
+    // and mag has bullet
+    if (crate == frate){
+        // from the last free slot of mag, init another bullet
+        int k = lastFree;
+        
+        while(mag[k].active){
+            k++;
+            if (k >= msize) k = 0; 
+            
+            // if we made a loop and still not find it. then return
+            if (k == lastFree) return;
+        }
+            
+        // now we found a free bullet.
+        float rp = -3.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(6.0f)));
+        float rq = -3.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(6.0f)));
+        mag[k].init(plx + rq, ply + rp, dlx + rp, dly + rq, 1, PLYBAR);
+        // update last free
+        lastFree = k;
+        crate = 0;
+    }
 }

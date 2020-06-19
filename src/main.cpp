@@ -1,11 +1,12 @@
 #include "defs.h"
 #include "player.h"
+#include "bullet.h"
 // Globa vals... for now
 SceCtrlData   ctrl;
 vita2d_font *font;
 enum GAME_STATE GSTATE;
 
-Player player(480.0f, 272.0f, 6.4f, 3.0f);; 
+Player player(480.0f, 272.0f, 6.4f, 6);; 
 
 void menu(){
 }
@@ -16,6 +17,11 @@ void update(){
 	sceCtrlPeekBufferPositive(0, &ctrl, 1);
 
 	player.update(ctrl.lx, ctrl.ly, ctrl.rx, ctrl.ry);
+
+	// update players bullets
+	for (int i = 0; i < player.msize; i++) player.mag[i].update();
+
+	if (ctrl.buttons & SCE_CTRL_RTRIGGER) player.firebt();
 
 	// if x key pressed switch GSTATE between running and pause
 	if (ctrl.buttons & SCE_CTRL_CROSS)
@@ -66,10 +72,20 @@ void render(){
 	
 	if (GSTATE == RUNNING)	drop_stats();
 
-	vita2d_draw_fill_circle(player.plx, player.ply, 16, CRIMSON);
+	if (ctrl.buttons & SCE_CTRL_RTRIGGER) // if shoot. change the circle colour for now
+			vita2d_draw_fill_circle(player.plx, player.ply, 16, CRIMSON);
+	else	vita2d_draw_fill_circle(player.plx, player.ply, 16, WHITE);
+
 	vita2d_draw_line(player.plx, player.ply,
 					 player.plx + 0.2f * player.dlx, 
 					 player.ply + 0.2f * player.dly, WHITE);
+
+	// draw bullets
+	for (int i = 0; i < player.msize; i++){
+		if (player.mag[i].active){
+			vita2d_draw_fill_circle(player.mag[i].blx,player.mag[i].bly, 4, CRIMSON);
+		}
+	}
 
 	// end drawing
 	vita2d_end_drawing();
@@ -88,9 +104,6 @@ int main(int argc, char *argv[]) {
 	printf("press Select+Start+L+R to stop\n");
 	/* to enable analog sampling */
 	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG);
-
-	sceCtrlPeekBufferPositive(0, &ctrl, 1);
-
 	// Init vita2d
 	vita2d_init();
 	vita2d_set_clear_color(BLACK);
@@ -100,15 +113,6 @@ int main(int argc, char *argv[]) {
 	do{
 		update();
 		render();
-		
-		//printf("Buttons:%08X == ", ctrl.buttons);
-		//printf("\e[m Stick:[%3i:%3i][%3i:%3i]\r\n", ctrl.lx,ctrl.ly, ctrl.rx,ctrl.ry);
-
-		// Print some player information
-		//printf("\ePlayer Location: [%d:%d]\r", player.plx, player.ply);
-		//printf("  | - -Velocity: [%d:%d]\n", player.pvx, player.pvy);
-		//printf("  | - - -Health: %d \n", player.health);
-		//printf("  | - fire rate: %lf\n", player.frate );
 	}while(1);
 
 	free_vita2d();
