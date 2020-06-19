@@ -4,13 +4,17 @@ void Player::update(int clx, int cly, int crx, int cry){
 
     // update the movement
     // Get moving velocity
-	pvx = (pvx + (abs(clx - OFFSET_STICK) > OFFSET_DEADZ)? clx - OFFSET_STICK:0);
-	pvx = (abs(pvx) < 0.2f)? 0 : pvx;
-	pvx = (pvx != 0)? pvx - (abs(pvx) / pvx) * acceln : 0;
+    bool dx = (abs(clx - OFFSET_STICK) > OFFSET_DEADZ);
+    bool dy = (abs(cly - OFFSET_STICK) > OFFSET_DEADZ);
 
-    pvy = (pvy + (abs(cly - OFFSET_STICK) > OFFSET_DEADZ)? cly - OFFSET_STICK:0);
-	pvy = (abs(pvy) < 0.2f)? 0 : pvy;
-	pvy = (pvy != 0)? pvy - (abs(pvy) / pvy) * acceln : 0;
+    if (dx) pvx += acceln * (clx - OFFSET_STICK);
+    if (dy) pvy += acceln * (cly - OFFSET_STICK);
+
+    pvx = (abs(pvx) <= acceln)? 0.0f : pvx;
+    pvy = (abs(pvy) <= acceln)? 0.0f : pvy;
+    
+    if (pvx != 0.0f) pvx -= ((pvx > 0)? acceln : -acceln);
+    if (pvy != 0.0f) pvy -= ((pvy > 0)? acceln : -acceln);
 
     // Check max velocity bound
 	pvx = (pvx > max_vel)?  max_vel : pvx;
@@ -23,8 +27,8 @@ void Player::update(int clx, int cly, int crx, int cry){
 	ply += pvy;	
 
     // now the direction
-    bool dx(abs(crx - OFFSET_STICK) > OFFSET_DEADZ);
-    bool dy(abs(cry - OFFSET_STICK) > OFFSET_DEADZ);
+    dx = (abs(crx - OFFSET_STICK) > OFFSET_DEADZ);
+    dy = (abs(cry - OFFSET_STICK) > OFFSET_DEADZ);
 
     if (dx || dy){
         dlx = crx - OFFSET_STICK;

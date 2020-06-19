@@ -12,7 +12,7 @@ class Player{
 	    int   health{10};   // health of player
         float max_vel;
 
-	    const float acceln = 0.36f;
+	    const float acceln = 0.5f;
         float frate;
 
         // Default constructor
