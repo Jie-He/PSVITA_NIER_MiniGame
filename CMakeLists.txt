@@ -76,6 +76,7 @@ target_link_libraries(${SHORT_NAME}
     vita2d 
   soloud
   pthread
+  SceAppMgr_stub 
   SceDisplay_stub
   SceGxm_stub
   SceLibKernel_stub 
