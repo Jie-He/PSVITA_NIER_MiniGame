@@ -13,11 +13,11 @@ class Player{
 	    int   health{10};   // health of player
         float max_vel;
 
-	    const float acceln{0.5f};
+	    const float acceln{6.5f};
         int frate;
 
         // set of bullets
-        const int msize = 15; // only allow player to have max 10 bullets
+        const int MSIZE = 15; // only allow player to have max 10 bullets
         Bullet mag[15];
         //int liveAmmo{0};    
         int lastFree{0};    
@@ -26,15 +26,16 @@ class Player{
         Player(float _plx, float _ply, float _max_vel, int _frate)
                : plx(_plx), ply(_ply), max_vel(_max_vel), frate(_frate){
                    // init the bullets
-                   for(int i = 0; i < msize; i++) mag[i] = Bullet();
+                   for(int i = 0; i < MSIZE; i++) mag[i] = Bullet();
                };
 
-        void update(int, int, int, int);
+        //void update(int, int, int, int, float);
+        void update(SceCtrlData, float);
         bool damage(int);
 
-        void firebt();
     private: 
         int crate{0};
+        void firebt();
 };
 
 #endif //_PLAYER_H_

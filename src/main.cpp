@@ -1,27 +1,29 @@
 #include "defs.h"
 #include "player.h"
+#include "enemy.h"
 #include "bullet.h"
+
+#include <chrono>
+#include <ctime>
+
 // Globa vals... for now
 SceCtrlData   ctrl;
-vita2d_font *font;
+vita2d_font  *font;
 enum GAME_STATE GSTATE;
 
-Player player(480.0f, 272.0f, 6.4f, 6);; 
+Player player(480.0f, 272.0f, 8.0f, 6);
+//Enemy  enemy1(300.0f, 200.0f, 8.0f, 6);
 
 void menu(){
 }
 
 // function to update the player and bots
-void update(){
+void update(float fElapsedTime){
 	
 	sceCtrlPeekBufferPositive(0, &ctrl, 1);
 
-	player.update(ctrl.lx, ctrl.ly, ctrl.rx, ctrl.ry);
-
-	// update players bullets
-	for (int i = 0; i < player.msize; i++) player.mag[i].update();
-
-	if (ctrl.buttons & SCE_CTRL_RTRIGGER) player.firebt();
+	//player.update(ctrl.lx, ctrl.ly, ctrl.rx, ctrl.ry, fElapsedTime);
+	player.update(ctrl, fElapsedTime);
 
 	// if x key pressed switch GSTATE between running and pause
 	if (ctrl.buttons & SCE_CTRL_CROSS)
@@ -30,10 +32,12 @@ void update(){
 			GSTATE =  PAUSED;
 		else
 			GSTATE =  RUNNING;
-		sceKernelDelayThread(100000);
+		sceKernelDelayThread(500000);
 	}
 }
 
+// Draw some text to render, for debugging
+// Cause alot of lag btw..
 void drop_stats(){
 	char buff[30];
 	vita2d_font_draw_text(font, 10, 10, CRIMSON, 11, "Player stats: ");
@@ -63,12 +67,17 @@ void drop_stats(){
 	vita2d_font_draw_text(font, 128, 70, WHITE, 11, buff);
 }
 
-void render(){
+// Draw game objects with Vita2D graphics. 
+// Update later with Crappy Engine 3D
+void render(float fFPS){
 	// begin drawing
 	vita2d_start_drawing();
 	vita2d_clear_screen();
 
-	//vita2d_font_draw_text(font, 350, 270, WHITE, 24, "Nier Automata - Hacking!");
+	// Display FPS
+	char buff[16];
+	sprintf(buff, "FPS: %6.3f", fFPS);
+	vita2d_font_draw_text(font, 860, 20, WHITE, 18, buff);
 	
 	if (GSTATE == RUNNING)	drop_stats();
 
@@ -81,7 +90,7 @@ void render(){
 					 player.ply + 0.2f * player.dly, WHITE);
 
 	// draw bullets
-	for (int i = 0; i < player.msize; i++){
+	for (int i = 0; i < player.MSIZE; i++){
 		if (player.mag[i].active){
 			vita2d_draw_fill_circle(player.mag[i].blx,player.mag[i].bly, 4, CRIMSON);
 		}
@@ -110,9 +119,25 @@ int main(int argc, char *argv[]) {
 	font = vita2d_load_font_mem(basicfont, basicfont_size);
 
 	GSTATE = RUNNING;
+
+	// maybe get an clock ticking?
+	auto cTimeStamp = std::chrono::system_clock::now();
+    auto cTimeCurrent = std::chrono::system_clock::now();
+
+    float fElapsedTime = 0.0f; // in seconds?
+    float fFPS = 0.0f;
 	do{
-		update();
-		render();
+ 		// calc elasped time since last loop
+        cTimeCurrent = std::chrono::high_resolution_clock::now();
+        // elapsed in seconds
+        fElapsedTime = (std::chrono::duration<float>(cTimeCurrent - cTimeStamp).count()); 
+        // reset time stamp
+        cTimeStamp = cTimeCurrent;
+        // Conversion && FPS
+        fFPS = 1 / fElapsedTime;
+
+		update(fElapsedTime);
+		render(fFPS);
 	}while(1);
 
 	free_vita2d();

@@ -1,20 +1,20 @@
 #include "player.h"
 
-void Player::update(int clx, int cly, int crx, int cry){
-
+//void Player::update(int clx, int cly, int crx, int cry, float fElapsedTime){
+void Player::update(SceCtrlData ctrl, float fElapsedTime){
     // update the movement
     // Get moving velocity
-    bool dx = (abs(clx - OFFSET_STICK) > OFFSET_DEADZ);
-    bool dy = (abs(cly - OFFSET_STICK) > OFFSET_DEADZ);
+    bool dx = (abs(ctrl.lx - OFFSET_STICK) > OFFSET_DEADZ);
+    bool dy = (abs(ctrl.ly - OFFSET_STICK) > OFFSET_DEADZ);
 
-    if (dx) pvx += acceln * (clx - OFFSET_STICK);
-    if (dy) pvy += acceln * (cly - OFFSET_STICK);
+    if (dx) pvx += acceln * (ctrl.lx - OFFSET_STICK) * fElapsedTime;
+    if (dy) pvy += acceln * (ctrl.ly - OFFSET_STICK) * fElapsedTime;
 
     pvx = (abs(pvx) <= acceln)? 0.0f : pvx;
     pvy = (abs(pvy) <= acceln)? 0.0f : pvy;
     
-    if (pvx != 0.0f) pvx -= ((pvx > 0)? acceln : -acceln);
-    if (pvy != 0.0f) pvy -= ((pvy > 0)? acceln : -acceln);
+    if (pvx != 0.0f) pvx -= ((pvx > 0)? acceln : -acceln) * fElapsedTime;
+    if (pvy != 0.0f) pvy -= ((pvy > 0)? acceln : -acceln) * fElapsedTime;
 
     // Check max velocity bound
 	pvx = (pvx > max_vel)?  max_vel : pvx;
@@ -27,12 +27,12 @@ void Player::update(int clx, int cly, int crx, int cry){
 	ply += pvy;	
 
     // now the direction
-    dx = (abs(crx - OFFSET_STICK) > OFFSET_DEADZ);
-    dy = (abs(cry - OFFSET_STICK) > OFFSET_DEADZ);
+    dx = (abs(ctrl.rx - OFFSET_STICK) > OFFSET_DEADZ);
+    dy = (abs(ctrl.ry - OFFSET_STICK) > OFFSET_DEADZ);
 
     if (dx || dy){
-        dlx = crx - OFFSET_STICK;
-        dly = cry - OFFSET_STICK;
+        dlx = ctrl.rx - OFFSET_STICK;
+        dly = ctrl.ry - OFFSET_STICK;
     }
 
     // check player bound
@@ -44,6 +44,11 @@ void Player::update(int clx, int cly, int crx, int cry){
 
     // fire enabler
     crate = (crate > frate)? frate : (crate + 1); 
+
+    // Checking fire button && update bullets
+	for (int i = 0; i < MSIZE; i++) mag[i].update();
+    // if fire button pressed. which is the R button
+	if (ctrl.buttons & SCE_CTRL_RTRIGGER) firebt();
 }
 
 void Player::firebt(){
@@ -55,7 +60,7 @@ void Player::firebt(){
         
         while(mag[k].active){
             k++;
-            if (k >= msize) k = 0; 
+            if (k >= MSIZE) k = 0; 
             
             // if we made a loop and still not find it. then return
             if (k == lastFree) return;
