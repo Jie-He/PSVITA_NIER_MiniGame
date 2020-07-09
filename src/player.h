@@ -20,7 +20,11 @@ class Player{
         const int MSIZE = 15; // only allow player to have max 10 bullets
         Bullet mag[15];
         //int liveAmmo{0};    
-        int lastFree{0};    
+        int lastFree{0};   
+
+        // facing direction counter
+        const float direction_change = 2.0f; // 2 seconds
+        float direction_counter{0.0f}; 
 
         // Default constructor
         Player(float _plx, float _ply, float _max_vel, int _frate)

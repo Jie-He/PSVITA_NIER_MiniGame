@@ -62,6 +62,7 @@ link_directories(
 add_executable(${SHORT_NAME}
   src/main.cpp
   src/defs.h
+  src/defs.cpp
   src/player.h
   src/player.cpp
   src/bullet.h

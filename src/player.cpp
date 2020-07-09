@@ -27,12 +27,30 @@ void Player::update(SceCtrlData ctrl, float fElapsedTime){
 	ply += pvy;	
 
     // now the direction
-    dx = (abs(ctrl.rx - OFFSET_STICK) > OFFSET_DEADZ);
-    dy = (abs(ctrl.ry - OFFSET_STICK) > OFFSET_DEADZ);
+    bool dx2 = (abs(ctrl.rx - OFFSET_STICK) > OFFSET_DEADZ);
+    bool dy2 = (abs(ctrl.ry - OFFSET_STICK) > OFFSET_DEADZ);
 
-    if (dx || dy){
+    // If either stick is above the deadzone offset, 
+    // then change heading direction
+    if (dx2 || dy2){
         dlx = ctrl.rx - OFFSET_STICK;
         dly = ctrl.ry - OFFSET_STICK;
+
+        // reset direction counter if any
+        direction_counter = 0;
+    } else{
+        // if dx or dy is not active for set amount of time
+        // change to facing direction to moving direction
+
+        direction_counter += fElapsedTime;
+
+        if (direction_counter >= direction_change && (dx || dy)){
+            direction_counter = direction_change;
+            // Using a normalise function with factor 20.0f
+            // factor is used to control the bullet spread
+            normalise_vector(pvx, pvy, dlx, dly, 100.0f);            
+        }
+
     }
 
     // check player bound
@@ -40,7 +58,6 @@ void Player::update(SceCtrlData ctrl, float fElapsedTime){
 	ply = (ply < 0)? 0 : ply;
 	plx = (plx > SCREEN_WIDTH )? SCREEN_WIDTH  : plx;
 	ply = (ply > SCREEN_HEIGHT)? SCREEN_HEIGHT : ply;
-
 
     // fire enabler
     crate = (crate > frate)? frate : (crate + 1); 
@@ -67,11 +84,13 @@ void Player::firebt(){
         }
             
         // now we found a free bullet.
+        // add some spread to the bullet direction
         float rp = -3.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(6.0f)));
         float rq = -3.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(6.0f)));
         mag[k].init(plx + rq, ply + rp, dlx + rp, dly + rq, 1, PLYBAR);
         // update last free
         lastFree = k;
+        // reset shooting interval
         crate = 0;
     }
 }

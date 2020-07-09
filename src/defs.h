@@ -48,4 +48,8 @@ enum BClass{
 const float OFFSET_STICK = 127.0f;
 const float OFFSET_DEADZ =  60.0f;
 
+// Normalise a vector, assuiming the other end is at 0, 0
+void normalise_vector(float, float, float&, float& , float);
+
+
 #endif /* _DEF_H_ */
