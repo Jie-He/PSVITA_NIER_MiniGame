@@ -1,7 +1,6 @@
 #ifndef _DEF_H_
 #define _DEF_H_
 
-#include <stdio.h>
 #include <psp2/kernel/processmgr.h>
 #include <psp2/ctrl.h>
 
@@ -15,8 +14,11 @@
 // import the vita2d library
 #include <vita2d.h>
 
-#include "debugScreen.h"
-#define printf psvDebugScreenPrintf
+//#include "debugScreen.h"
+//#define printf psvDebugScreenPrintf
+
+const int SCREEN_WIDTH = 960;
+const int SCREEN_HEIGHT= 544;
 
 
 // Def some colours
@@ -50,6 +52,5 @@ const float OFFSET_DEADZ =  60.0f;
 
 // Normalise a vector, assuiming the other end is at 0, 0
 void normalise_vector(float, float, float&, float& , float);
-
 
 #endif /* _DEF_H_ */

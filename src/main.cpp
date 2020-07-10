@@ -108,9 +108,9 @@ void free_vita2d(){
 }
 
 int main(int argc, char *argv[]) {
-	psvDebugScreenInit();
-	printf("input test\n");
-	printf("press Select+Start+L+R to stop\n");
+	//psvDebugScreenInit();
+	//printf("input test\n");
+	//printf("press Select+Start+L+R to stop\n");
 	/* to enable analog sampling */
 	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG);
 	// Init vita2d
