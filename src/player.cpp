@@ -1,15 +1,16 @@
 #include "player.h"
+#include "math.h"
 
-//void Player::update(int clx, int cly, int crx, int cry, float fElapsedTime){
-void Player::update(SceCtrlData ctrl, float fElapsedTime){
+void Player::update(int clx, int cly, int crx, int cry, bool fire, float fElapsedTime){
+
     // update the movement
     // Get moving velocity
-    bool dx = (abs(ctrl.lx - OFFSET_STICK) > OFFSET_DEADZ);
-    bool dy = (abs(ctrl.ly - OFFSET_STICK) > OFFSET_DEADZ);
+    bool dx = (abs(clx - OFFSET_STICK) > OFFSET_DEADZ);
+    bool dy = (abs(cly - OFFSET_STICK) > OFFSET_DEADZ);
 
-    if (dx) pvx += acceln * (ctrl.lx - OFFSET_STICK) * fElapsedTime;
-    if (dy) pvy += acceln * (ctrl.ly - OFFSET_STICK) * fElapsedTime;
-
+    if (dx) pvx += acceln * (clx - OFFSET_STICK) * fElapsedTime;
+    if (dy) pvy += acceln * (cly - OFFSET_STICK) * fElapsedTime;
+    
     pvx = (abs(pvx) <= acceln)? 0.0f : pvx;
     pvy = (abs(pvy) <= acceln)? 0.0f : pvy;
     
@@ -27,14 +28,14 @@ void Player::update(SceCtrlData ctrl, float fElapsedTime){
 	ply += pvy;	
 
     // now the direction
-    bool dx2 = (abs(ctrl.rx - OFFSET_STICK) > OFFSET_DEADZ);
-    bool dy2 = (abs(ctrl.ry - OFFSET_STICK) > OFFSET_DEADZ);
+    bool dx2 = (abs(crx - OFFSET_STICK) > OFFSET_DEADZ);
+    bool dy2 = (abs(cry - OFFSET_STICK) > OFFSET_DEADZ);
 
     // If either stick is above the deadzone offset, 
     // then change heading direction
     if (dx2 || dy2){
-        dlx = ctrl.rx - OFFSET_STICK;
-        dly = ctrl.ry - OFFSET_STICK;
+        dlx = crx - OFFSET_STICK;
+        dly = cry - OFFSET_STICK;
 
         // reset direction counter if any
         direction_counter = 0;
@@ -44,34 +45,35 @@ void Player::update(SceCtrlData ctrl, float fElapsedTime){
 
         direction_counter += fElapsedTime;
 
-        if (direction_counter >= direction_change && (dx || dy)){
+        if (direction_counter >= direction_change && (pvx || pvy)){
             direction_counter = direction_change;
-            // Using a normalise function with factor 20.0f
+            // Using a normalise function with factor 2.0f
             // factor is used to control the bullet spread
-            normalise_vector(pvx, pvy, dlx, dly, 100.0f);            
+            normalise_vector(pvx, pvy, dlx, dly, 2.0f);            
         }
 
     }
 
     // check player bound
-	plx = (plx < 0)? 0 : plx;
-	ply = (ply < 0)? 0 : ply;
-	plx = (plx > SCREEN_WIDTH )? SCREEN_WIDTH  : plx;
-	ply = (ply > SCREEN_HEIGHT)? SCREEN_HEIGHT : ply;
+	//plx = (plx < 0)? 0 : plx;
+	//ply = (ply < 0)? 0 : ply;
+	//plx = (plx > SCREEN_WIDTH )? SCREEN_WIDTH  : plx;
+	//ply = (ply > SCREEN_HEIGHT)? SCREEN_HEIGHT : ply;
+
 
     // fire enabler
-    crate = (crate > frate)? frate : (crate + 1); 
+    crate = (crate >= frate)? frate : (crate + fElapsedTime); 
+     // Checking fire button && update bullets
+	for (int i = 0; i < MSIZE; i++) mag[i].update(fElapsedTime);
 
-    // Checking fire button && update bullets
-	for (int i = 0; i < MSIZE; i++) mag[i].update();
-    // if fire button pressed. which is the R button
-	if (ctrl.buttons & SCE_CTRL_RTRIGGER) firebt();
+    if (fire) firebt();
 }
 
 void Player::firebt(){
     // if its re enabled, fire 
     // and mag has bullet
     if (crate == frate){
+
         // from the last free slot of mag, init another bullet
         int k = lastFree;
         
@@ -84,13 +86,19 @@ void Player::firebt(){
         }
             
         // now we found a free bullet.
-        // add some spread to the bullet direction
-        float rp = -3.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(6.0f)));
-        float rq = -3.0f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(6.0f)));
-        mag[k].init(plx + rq, ply + rp, dlx + rp, dly + rq, 1, PLYBAR);
+        //float rp = -3.0f ;//+ static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(6.0f)));
+        //float rq = -3.0f ;//+ static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(6.0f)));
+        mag[k].init(plx, ply, dlx, dly, 1, PLYBAR, 24.0f);
         // update last free
         lastFree = k;
-        // reset shooting interval
-        crate = 0;
+        crate = 0.0f;
+        //gSoloud.play(gWave); // play sound
     }
 }
+
+void Player::normalise_vector(float a, float b, float& a_out, float& b_out, 
+                      float scale_factor = 1.0f){ // Optional scale factor to apply
+    float common = std::sqrt( a * a + b * b );
+    a_out = a / common * scale_factor;
+    b_out = b / common * scale_factor;
+};
