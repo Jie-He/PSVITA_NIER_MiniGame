@@ -1,19 +1,24 @@
 #include "../../VEngine/VEngine.h"
 
+#include "BaseActor.h"
 #include "player.h"
+#include "EnemyFollower.h"
 #include "bullet.h"
 
 class MVEngine : public VEngine{
 
 	private: 
 		vCamera camMain = vCamera(SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0.1f, 10000.0f);
-		vCamera camDevp = vCamera(200, 200, 740, 324, 0.1f, 100.0f, 60.0f);
+		vCamera camDevp = vCamera(200, 200, 740, 324, 0.1f, 100.0f,120.0f);
 		//std::vector<vMesh> scene;
 		vMesh vmPlayer;
 		vMesh vmEnemy1;
 		vMesh vmGround;
 		vMesh vmPlyBlt;
-		Player pPlayer = Player(0, 0, 1.0f, 0.1f);
+		// Actors
+		Player pPlayer = Player(0, 0, 10.0f, 0.08f);
+		EnemyFollower eFollower = EnemyFollower(FOLLOWER, vec2d(1,5), 3, 1.0f);
+
 
 	// Given a 2d vector, return the radians from anticlockwise
 	float vec_to_rad(float ax, float ay){
@@ -24,11 +29,14 @@ class MVEngine : public VEngine{
 
 		// if on the right, do 2pi - rad
 		if (ax > 0)
-			return 2 * M_PI - rad;
+			return 6.283185 - rad;
 
 		return rad;
 	}
 
+	float vec_to_rad(vec2d& v){
+		return vec_to_rad(v.x, -v.y);
+	}
 
 	void onCreate() override{
 		// Turn on shatty lighting
@@ -65,25 +73,33 @@ class MVEngine : public VEngine{
 
 		// Translate the mesh properly
 		vmGround.ApplyTranslation(vec3d(0.0f, 0.5f, 0.0f));
-		vmEnemy1.ApplyTranslation(vec3d(0.0f,-0.7f, 0.0f));
+		vmEnemy1.ApplyTranslation(vec3d(0.0f,-0.7f, 1.0f));
 		vmPlayer.ApplyTranslation(vec3d(0.0f,-0.4f, 0.0f));
 		vmPlyBlt.ApplyTranslation(vec3d(0.0f,-0.3f, 0.0f));
 
-		camMain.ApplyTranslation(vec3d(0.0f, -10.0f, -3.0f));
+		camMain.ApplyTranslation(vec3d(0.0f, -15.0f, -5.0f));
 		// Rotate forward 80 degress
 		mat4x4 matRot = matMakeRotationX(-1.396263);
 		camMain.ApplyRotation(matRot, camMain.getVecLocation());
 
-		camDevp.ApplyTranslation(vec3d(12.0f, 0.0f, 0.0f));
+		camDevp.ApplyTranslation(vec3d(22.0f, -1.0f, 0.0f));
 		vec3d pointToLeft(-1.0f, 0.0f, 0.0f);
 		pointToLeft += camDevp.getVecLocation();
 		camDevp.PointAt(pointToLeft);
 	}
 
+	bool in_range(float ax, float ay, float bx, float by, float r){
+		float dx = ax - bx;
+		float dy = ay - by;
+		float range = sqrtf(dx * dx + dy * dy);
+
+		return (range <= r);
+	}
+
 	void update(float fElapsedTime) override{
-		std::vector<vMesh> svv = {vmPlayer, vmEnemy1};
-		std::vector<vMesh> sbl;
-		vmEnemy1.ApplyTranslation(vec3d(0.0f, 0.0f, fElapsedTime/5));
+		std::vector<vMesh> svv; // All Actor objects here
+ 		std::vector<vMesh> sbl; // All bullets here
+		//vmEnemy1.ApplyTranslation(vec3d(0.0f, 0.0f, fElapsedTime/5));
 
 		// format input for player
 		int lx, ly, rx, ry;
@@ -112,9 +128,6 @@ class MVEngine : public VEngine{
 
 		// O key for fire
 		if (keypress == 79 || keypress == 111) fire=true;
-		
-		std::cout << "." << std::endl;
-		std::cout << pPlayer.dlx << " " << pPlayer.dly << std::endl;
 		#endif
 
 		#ifdef PSVITA
@@ -126,8 +139,30 @@ class MVEngine : public VEngine{
 		#endif
 
 		pPlayer.update(lx, ly, rx, ry, fire, fElapsedTime);
+		eFollower.update(fElapsedTime, vec2d(pPlayer.plx, pPlayer.ply));
+
+		// Do player mesh
+		vMesh player_mesh = vmPlayer;
+		vec3d vLocation(pPlayer.plx, vmPlayer.getVecLocation().y, -pPlayer.ply);
+		player_mesh.setLocation(vLocation);
+
+		float rad = vec_to_rad(pPlayer.dlx, -pPlayer.dly);
+		mat4x4 matRot = matMakeRotationY(rad);
+		player_mesh.ApplyRotation(matRot, vLocation);
+		// Push to scene array
+		svv.push_back(player_mesh);
+
+		// Do the same for the enemy 
+		vMesh enemy_mesh = vmEnemy1;
+		vLocation = vec3d(eFollower.getLocation().x, vmEnemy1.getVecLocation().y, -eFollower.getLocation().y);
+		enemy_mesh.setLocation(vLocation);
+		rad = vec_to_rad(eFollower.getDirection());
+		matRot = matMakeRotationY(rad);
+		enemy_mesh.ApplyRotation(matRot, vLocation);
+		svv.push_back(enemy_mesh);
+
 		short n = 0;
-		for (auto blt : pPlayer.mag){
+		for (auto& blt : pPlayer.mag){
 			if (blt.active){
 				sbl.push_back(vmPlyBlt);
 				sbl[n].setLocation(vec3d(blt.blx, vmPlyBlt.getVecLocation().y, -blt.bly));
@@ -137,29 +172,24 @@ class MVEngine : public VEngine{
 				mat4x4 matrot = matMakeRotationY(fdirection);
 				sbl[n].ApplyRotation(matrot, sbl[n].getVecLocation());
 
+				// check hit
+				if (in_range(blt.blx, blt.bly, enemy_mesh.getVecLocation().x, -enemy_mesh.getVecLocation().z, 1.5f))
+					blt.active = false;
 				n++;
 			}
 		}
 
-
-		vec3d vLocation(pPlayer.plx, svv[0].getVecLocation().y, -pPlayer.ply);
-		svv[0].setLocation(vLocation);
-
-		float rad = vec_to_rad(pPlayer.dlx, -pPlayer.dly);
-		std::cout << rad << std::endl;
-		mat4x4 matRot = matMakeRotationY(rad);
-		svv[0].ApplyRotation(matRot, vLocation);
 
 		// Draw the scene
 		draw_mesh(camMain, vmGround);
 		draw_scene(camMain, svv);
 		draw_scene(camMain, sbl);
 		
-		
+		#ifdef OPENCV
 		draw_mesh(camDevp, vmGround);
 		draw_scene(camDevp, svv);
 		draw_scene(camDevp, sbl);
-		
+		#endif
 	}
 
 };

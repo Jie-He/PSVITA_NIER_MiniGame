@@ -14,8 +14,8 @@ void Bullet::init(float _blx, float _bly, float _bvx, float _bvy, int _dmg, BCla
     if (norm == 0.0f) norm = 1; // if i did some dumb thing
     unitx = bvx / norm;
     unity = bvy / norm;
-    bvx = unitx * speedFactor;
-    bvy = unity * speedFactor;
+    bvx *= speedFactor/norm;
+    bvy *= speedFactor/norm;
 
     blx += unitx;
     bly += unity;

@@ -1,5 +1,6 @@
 #include "player.h"
 #include "math.h"
+#include <iostream>
 
 void Player::update(int clx, int cly, int crx, int cry, bool fire, float fElapsedTime){
 
@@ -8,14 +9,17 @@ void Player::update(int clx, int cly, int crx, int cry, bool fire, float fElapse
     bool dx = (abs(clx - OFFSET_STICK) > OFFSET_DEADZ);
     bool dy = (abs(cly - OFFSET_STICK) > OFFSET_DEADZ);
 
-    if (dx) pvx += acceln * (clx - OFFSET_STICK) * fElapsedTime;
-    if (dy) pvy += acceln * (cly - OFFSET_STICK) * fElapsedTime;
+    //if (dx) pvx += acceln * (clx - OFFSET_STICK) * fElapsedTime;
+    //if (dy) pvy += acceln * (cly - OFFSET_STICK) * fElapsedTime;
+    
+    if (dx) pvx += (clx - OFFSET_STICK);
+    if (dy) pvy += (cly - OFFSET_STICK);
     
     pvx = (abs(pvx) <= acceln)? 0.0f : pvx;
     pvy = (abs(pvy) <= acceln)? 0.0f : pvy;
     
-    if (pvx != 0.0f) pvx -= ((pvx > 0)? acceln : -acceln) * fElapsedTime;
-    if (pvy != 0.0f) pvy -= ((pvy > 0)? acceln : -acceln) * fElapsedTime;
+    if (pvx != 0.0f && !dx) pvx -= ((pvx > 0)? acceln : -acceln) * fElapsedTime;
+    if (pvy != 0.0f && !dy) pvy -= ((pvy > 0)? acceln : -acceln) * fElapsedTime;
 
     // Check max velocity bound
 	pvx = (pvx > max_vel)?  max_vel : pvx;
@@ -24,8 +28,8 @@ void Player::update(int clx, int cly, int crx, int cry, bool fire, float fElapse
 	pvy = (pvy <-max_vel)? -max_vel : pvy;
 
     // update player location
-	plx += pvx;
-	ply += pvy;	
+	plx += pvx * fElapsedTime;
+	ply += pvy * fElapsedTime;	
 
     // now the direction
     bool dx2 = (abs(crx - OFFSET_STICK) > OFFSET_DEADZ);
@@ -55,10 +59,10 @@ void Player::update(int clx, int cly, int crx, int cry, bool fire, float fElapse
     }
 
     // check player bound
-	//plx = (plx < 0)? 0 : plx;
-	//ply = (ply < 0)? 0 : ply;
-	//plx = (plx > SCREEN_WIDTH )? SCREEN_WIDTH  : plx;
-	//ply = (ply > SCREEN_HEIGHT)? SCREEN_HEIGHT : ply;
+	plx = (plx < -20)? -20 : plx;
+	ply = (ply < -20)? -20 : ply;
+	plx = (plx >  20)?  20 : plx;
+	ply = (ply >  20)?  20 : ply;
 
 
     // fire enabler
@@ -86,9 +90,10 @@ void Player::firebt(){
         }
             
         // now we found a free bullet.
-        //float rp = -3.0f ;//+ static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(6.0f)));
-        //float rq = -3.0f ;//+ static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(6.0f)));
-        mag[k].init(plx, ply, dlx, dly, 1, PLYBAR, 24.0f);
+        float rp = -0.05f + (static_cast <float> (rand())) /( static_cast <float> (RAND_MAX/(0.1f)));
+        float rq = -0.05f + (static_cast <float> (rand())) /( static_cast <float> (RAND_MAX/(0.1f)));
+
+        mag[k].init(plx, ply, dlx + rp, dly + rq, 1, PLYBAR, 48.0f);
         // update last free
         lastFree = k;
         crate = 0.0f;

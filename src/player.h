@@ -20,7 +20,7 @@ class Player{
 	    int   health{10};   // health of player
         float max_vel;
 
-	    const float acceln{6.5f};
+	    float acceln;
         float frate;
 
         // set of bullets
@@ -38,6 +38,7 @@ class Player{
                : plx(_plx), ply(_ply), max_vel(_max_vel), frate(_frate){
                    //gSoloud.init();
                    //gWave.load("app0:/audio/laser.ogg");
+                   acceln = _max_vel/3;
                };
 
         void update(int, int, int, int, bool, float);
