@@ -55,7 +55,6 @@ void Player::update(int clx, int cly, int crx, int cry, bool fire, float fElapse
             // factor is used to control the bullet spread
             normalise_vector(pvx, pvy, dlx, dly, 2.0f);            
         }
-
     }
 
     // check player bound
@@ -107,3 +106,12 @@ void Player::normalise_vector(float a, float b, float& a_out, float& b_out,
     a_out = a / common * scale_factor;
     b_out = b / common * scale_factor;
 };
+
+bool Player::damage(int a){
+    health-= a;
+     if (health < 0){ 
+        health = 0;
+        return false;
+     }
+     return true; 
+}

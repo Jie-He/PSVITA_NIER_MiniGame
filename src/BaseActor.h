@@ -64,6 +64,7 @@ class BaseActor{
         // Getters
         vec2d& getLocation() {return vLocation;};
         vec2d& getDirection(){return vDirection;};
+        bool isAlive() {return bAlive;};
 };
 
 #endif//_BASE_ACTOR_H_

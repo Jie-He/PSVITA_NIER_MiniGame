@@ -8,8 +8,6 @@ EnemyFollower::EnemyFollower(Actor _aType, vec2d _vLocation, short _sHealth, flo
     // Always face forward;
     vDirection.y = -128;
     vDirection.x = 0;
-    vLocation.x = 0;
-    vLocation.y = 0;
 
     bAlive = true;
 };
