@@ -17,6 +17,7 @@ void Bullet::init(float _blx, float _bly, float _bvx, float _bvy, int _dmg, BCla
     bvx *= speedFactor/norm;
     bvy *= speedFactor/norm;
 
+    // Shift the bullet forward a little
     blx += unitx;
     bly += unity;
 

@@ -53,7 +53,7 @@ void Player::update(int clx, int cly, int crx, int cry, bool fire, float fElapse
             direction_counter = direction_change;
             // Using a normalise function with factor 2.0f
             // factor is used to control the bullet spread
-            normalise_vector(pvx, pvy, dlx, dly, 2.0f);            
+            normalise_vector(pvx, pvy, dlx, dly, 128.0f);            
         }
     }
 
@@ -89,8 +89,10 @@ void Player::firebt(){
         }
             
         // now we found a free bullet.
-        float rp = -0.05f + (static_cast <float> (rand())) /( static_cast <float> (RAND_MAX/(0.1f)));
-        float rq = -0.05f + (static_cast <float> (rand())) /( static_cast <float> (RAND_MAX/(0.1f)));
+        float rp = -5.0f + (static_cast <float> (rand())) /( static_cast <float> (RAND_MAX/(10.0f)));
+        float rq = -5.0f + (static_cast <float> (rand())) /( static_cast <float> (RAND_MAX/(10.0f)));
+
+        std::cout << "DLX: " << dlx << "\nDLY: " << dly << std::endl;
 
         mag[k].init(plx, ply, dlx + rp, dly + rq, 1, PLYBAR, 48.0f);
         // update last free

@@ -89,7 +89,8 @@ class MVEngine : public VEngine{
 
 
 		for (int i = 0; i < 3; i++){
-			enemies.push_back(EnemyFollower(FOLLOWER, vec2d(-5 + i * 5,-5 + i * 5), 3, 1.0f));
+			enemies.push_back(EnemyFollower(FOLLOWER, vec2d(-5 + i * 5,-5 + i * 5)
+											, 3, 1.0f));
 		}
 
 	}
@@ -104,8 +105,7 @@ class MVEngine : public VEngine{
 	void update(float fElapsedTime) override{
 		std::vector<vMesh> svv; // All Actor objects here
  		std::vector<vMesh> sbl; // All bullets here
-		//vmEnemy1.ApplyTranslation(vec3d(0.0f, 0.0f, fElapsedTime/5));
-
+	
 		// format input for player
 		int lx, ly, rx, ry;
 		lx = ly = rx = ry = OFFSET_STICK;
@@ -164,7 +164,8 @@ class MVEngine : public VEngine{
 			if (!e.isAlive()) continue;
 		
 			vMesh enemy_mesh = vmEnemy1;
-			vLocation = vec3d(e.getLocation().x, vmEnemy1.getVecLocation().y, -e.getLocation().y);
+			vLocation = vec3d(e.getLocation().x, vmEnemy1.getVecLocation().y,
+							 -e.getLocation().y);
 			enemy_mesh.setLocation(vLocation);
 			rad = vec_to_rad(e.getDirection());
 			matRot = matMakeRotationY(rad);
@@ -187,7 +188,9 @@ class MVEngine : public VEngine{
 				for(auto& e : enemies){
 					if (!e.isAlive()) continue;
 						// check hit
-					if (in_range(blt.blx, blt.bly, e.getLocation().x, e.getLocation().y , 1.5f)){
+					if (in_range(blt.blx, blt.bly, e.getLocation().x,
+								 e.getLocation().y , 1.5f)){
+
 						blt.active = false;
 						e.damage(1);
 					}
@@ -199,7 +202,8 @@ class MVEngine : public VEngine{
 		// Check player enemy collision
 		for (auto& e : enemies){
 			if (!e.isAlive()) continue;
-			bool bCollid = in_range(pPlayer.plx, pPlayer.ply, e.getLocation().x, e.getLocation().y, 1.5f);
+			bool bCollid = in_range(pPlayer.plx, pPlayer.ply, 
+									e.getLocation().x, e.getLocation().y, 1.5f);
 			if(bCollid){
 				if(pPlayer.damage(1)){
 					#ifdef OPENCV
