@@ -1,7 +1,7 @@
 #ifndef _BULLET_H_
 #define _BULLET_H_
 
-//#include "defs.h"
+#include "../../VEngine/vector_matrix.h"
 // Bullet variants
 enum BClass{
     PLYBAR, // Player bullet type
@@ -26,6 +26,7 @@ class Bullet{
 
         // Initial lx  ly  direction x y
         void init(float, float, float, float, int, BClass, float);
+        void init(vec2d&, vec2d&, int, BClass, float);
         void update(float);
 };
 #endif//_BULLET_H_

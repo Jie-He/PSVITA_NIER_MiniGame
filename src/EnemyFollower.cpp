@@ -1,6 +1,7 @@
 #include "EnemyFollower.h"
 
-EnemyFollower::EnemyFollower(Actor _aType, vec2d _vLocation, short _sHealth, float _fMaxVel){
+EnemyFollower::EnemyFollower(Actor _aType, vec2d _vLocation, 
+                             short _sHealth, float _fMaxVel){
     aType       = _aType;
     vLocation   = _vLocation;
     sHealth     = _sHealth;
@@ -12,7 +13,11 @@ EnemyFollower::EnemyFollower(Actor _aType, vec2d _vLocation, short _sHealth, flo
     bAlive = true;
 };
 
-void EnemyFollower::update(float fElapsedTime, vec2d vPlayerLoc){
+void EnemyFollower::update(float fElapsedTime, vec2d vPlayerLoc){    
+    // Call base update to move
+    BaseActor::update(fElapsedTime);
+    
+    if (!bAlive) return;
     // set the vDirection to vPlayer
     vDirection.x = vPlayerLoc.x - vLocation.x;
     vDirection.y = vPlayerLoc.y - vLocation.y;
@@ -24,8 +29,5 @@ void EnemyFollower::update(float fElapsedTime, vec2d vPlayerLoc){
     vVelocity.x *= fMaxVel;
     vVelocity.y *= fMaxVel;
 
-    vLocation.x += vVelocity.x * fElapsedTime;
-    vLocation.y += vVelocity.y * fElapsedTime;
-    // Call base update
-    //BaseActor::update(fElapsedTime);
+
 }

@@ -7,7 +7,8 @@
 
 class EnemyFollower : public BaseActor{
     public:
-        EnemyFollower(Actor _aType, vec2d _vLocation, short _sHealth=3, float _fMaxVel=5.0f);
+        EnemyFollower(Actor _aType, vec2d _vLocation, 
+                      short _sHealth=3, float _fMaxVel=5.0f);
 
         void update(float fElapsedTime, vec2d vPlayerLoc);
         // Does no firing

@@ -1,6 +1,10 @@
 #include "bullet.h"
 #include <math.h>
 
+void Bullet::init(vec2d& _loc, vec2d& dir, int _dmg, BClass bc, float speedFactor){
+    init(_loc.x, _loc.y, dir.x, dir.y, dmg, bc, speedFactor);
+}
+
 void Bullet::init(float _blx, float _bly, float _bvx, float _bvy, int _dmg, BClass bc, float speedFactor){
     fLife = 0.0f;
 

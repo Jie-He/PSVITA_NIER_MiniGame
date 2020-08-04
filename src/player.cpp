@@ -46,7 +46,6 @@ void Player::update(int clx, int cly, int crx, int cry, bool fire, float fElapse
     } else{
         // if dx or dy is not active for set amount of time
         // change to facing direction to moving direction
-
         direction_counter += fElapsedTime;
 
         if (direction_counter >= direction_change && (pvx || pvy)){
@@ -91,8 +90,6 @@ void Player::firebt(){
         // now we found a free bullet.
         float rp = -5.0f + (static_cast <float> (rand())) /( static_cast <float> (RAND_MAX/(10.0f)));
         float rq = -5.0f + (static_cast <float> (rand())) /( static_cast <float> (RAND_MAX/(10.0f)));
-
-        std::cout << "DLX: " << dlx << "\nDLY: " << dly << std::endl;
 
         mag[k].init(plx, ply, dlx + rp, dly + rq, 1, PLYBAR, 48.0f);
         // update last free

@@ -3,7 +3,15 @@
 #include "BaseActor.h"
 #include "player.h"
 #include "EnemyFollower.h"
+#include "EnemyShooter.h"
 #include "bullet.h"
+
+// [TODO]
+// struct SceneEntity
+// {
+	
+// };
+
 
 class MVEngine : public VEngine{
 
@@ -19,6 +27,7 @@ class MVEngine : public VEngine{
 		Player pPlayer = Player(0, 10, 10.0f, 0.08f);
 		//EnemyFollower eFollower = EnemyFollower(FOLLOWER, vec2d(2,-2), 3, 1.0f);
 		std::vector<EnemyFollower> enemies;
+		std::vector<EnemyShooter>  shooters;
 
 	// Given a 2d vector, return the radians from anticlockwise
 	float vec_to_rad(float ax, float ay){
@@ -89,8 +98,8 @@ class MVEngine : public VEngine{
 
 
 		for (int i = 0; i < 3; i++){
-			enemies.push_back(EnemyFollower(FOLLOWER, vec2d(-5 + i * 5,-5 + i * 5)
-											, 3, 1.0f));
+			enemies.push_back(EnemyFollower(FOLLOWER, vec2d(-5 + i * 5,-5 + i * 5), 3, 1.0f));
+			shooters.push_back(EnemyShooter(SNIPER, vec2d(5, -5 + i * 5), 5, 5.0f, 0.5f, SHOOT_MIXED));
 		}
 
 	}
@@ -147,6 +156,9 @@ class MVEngine : public VEngine{
 		for (auto& e : enemies){
 			e.update(fElapsedTime, vec2d(pPlayer.plx, pPlayer.ply));
 		}
+		for (auto& e: shooters){
+			e.update(fElapsedTime, vec2d(pPlayer.plx, pPlayer.ply));
+		}
 
 		// Do player mesh
 		vMesh player_mesh = vmPlayer;
@@ -172,18 +184,40 @@ class MVEngine : public VEngine{
 			enemy_mesh.ApplyRotation(matRot, vLocation);
 			svv.push_back(enemy_mesh);
 		}
+		// Also the shooter... [TODO] need to merge all into one array and use the enemy type
+		for (auto& e : shooters){
+			// Update the bullet even if it the enemy is dead
+			for (auto& blt : e.bMag){
+				if (blt.active){
+					sbl.push_back(vmPlyBlt);
+					sbl[sbl.size()-1].setLocation(vec3d(blt.blx, vmPlyBlt.getVecLocation().y, -blt.bly));
+					float fdirection = vec_to_rad(blt.bvx, -blt.bvy);
+
+					mat4x4 matrot = matMakeRotationY(fdirection);
+					sbl[sbl.size()-1].ApplyRotation(matrot, sbl[sbl.size()-1].getVecLocation());
+				}
+			}
+			if (!e.isAlive()) continue;
+		
+			vMesh enemy_mesh = vmEnemy1;
+			vLocation = vec3d(e.getLocation().x, vmEnemy1.getVecLocation().y,
+							 -e.getLocation().y);
+			enemy_mesh.setLocation(vLocation);
+			rad = vec_to_rad(e.getDirection());
+			matRot = matMakeRotationY(rad);
+			enemy_mesh.ApplyRotation(matRot, vLocation);
+			svv.push_back(enemy_mesh);
+		}
 		
 		// Check player bullet collision
-		short n = 0;
 		for (auto& blt : pPlayer.mag){
 			if (blt.active){
 				sbl.push_back(vmPlyBlt);
-				sbl[n].setLocation(vec3d(blt.blx, vmPlyBlt.getVecLocation().y, -blt.bly));
-
+				sbl[sbl.size()-1].setLocation(vec3d(blt.blx, vmPlyBlt.getVecLocation().y, -blt.bly));
 				float fdirection = vec_to_rad(blt.bvx, -blt.bvy);
 
 				mat4x4 matrot = matMakeRotationY(fdirection);
-				sbl[n].ApplyRotation(matrot, sbl[n].getVecLocation());
+				sbl[sbl.size()-1].ApplyRotation(matrot, sbl[sbl.size()-1].getVecLocation());
 
 				for(auto& e : enemies){
 					if (!e.isAlive()) continue;
@@ -194,8 +228,17 @@ class MVEngine : public VEngine{
 						blt.active = false;
 						e.damage(1);
 					}
-				}				
-				n++;
+				}			
+				for(auto& e : shooters){
+					if (!e.isAlive()) continue;
+						// check hit
+					if (in_range(blt.blx, blt.bly, e.getLocation().x,
+								 e.getLocation().y , 1.5f)){
+
+						blt.active = false;
+						e.damage(1);
+					}
+				}	
 			}
 		}
 
