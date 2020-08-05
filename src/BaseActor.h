@@ -44,7 +44,7 @@ class BaseActor{
         short nLastFreeMag{0};
     
         BaseActor() {bAlive = true; vActorModel = nullptr;};
-
+        ~BaseActor(){};
         void update(float fElapsedTime){ 
             // Update the bullets even if dead.
             for (int i = 0; i < MAG_SIZE; i++) bMag[i].update(fElapsedTime);

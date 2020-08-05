@@ -24,8 +24,8 @@ class Player{
         float frate;
 
         // set of bullets
-        const int MSIZE = 15; // only allow player to have max 10 bullets
-        Bullet mag[15];
+        const int MSIZE = 25; // only allow player to have max 10 bullets
+        Bullet mag[25];
         //int liveAmmo{0};    
         int lastFree{0};   
 

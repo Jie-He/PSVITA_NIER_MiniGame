@@ -91,7 +91,8 @@ void Player::firebt(){
         float rp = -5.0f + (static_cast <float> (rand())) /( static_cast <float> (RAND_MAX/(10.0f)));
         float rq = -5.0f + (static_cast <float> (rand())) /( static_cast <float> (RAND_MAX/(10.0f)));
 
-        mag[k].init(plx, ply, dlx + rp, dly + rq, 1, PLYBAR, 48.0f);
+        mag[k].init(plx, ply, dlx + rp, dly + rq, 1, BClass::PLYBAR, 64.0f);
+        
         // update last free
         lastFree = k;
         crate = 0.0f;

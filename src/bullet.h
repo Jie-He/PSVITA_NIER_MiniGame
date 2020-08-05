@@ -11,12 +11,15 @@ enum BClass{
 
 class Bullet{
     public:
-        float bspeed{20};
-        float blx, bly;
-        float bvx, bvy;
+        float bspeed;
+        vec2d vPre; // Previous location
+        vec2d vLoc;
+        vec2d vVel;
+        //float blx, bly;
+        //float bvx, bvy;
         float unitx, unity;
         // temp 3 second life
-        const float LIFETIME = 1.5f;
+        const float LIFETIME = 2.5f;
         float fLife;
 
         BClass mtype;
@@ -28,5 +31,6 @@ class Bullet{
         void init(float, float, float, float, int, BClass, float);
         void init(vec2d&, vec2d&, int, BClass, float);
         void update(float);
+        bool intersect(Bullet&);
 };
 #endif//_BULLET_H_

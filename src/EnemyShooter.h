@@ -16,13 +16,14 @@ class EnemyShooter : public Enemy{
     protected:
         ShootPattern spPattern;
         BClass shootingType;
+        float fBulletSpeed;
     public:
         EnemyShooter(Actor _aType, vec2d _vLocation, short _sHealth=3,
-                     float _fMaxVel=5.0f, float _fFireRate = 0.01f, ShootPattern _sp=SHOOT_DEST, vMesh* _vModel = nullptr){
+                     float _fBSpeed=2.0f, float _fFireRate = 0.01f, ShootPattern _sp=SHOOT_DEST, vMesh* _vModel = nullptr){
         aType       = _aType;
         vLocation   = _vLocation;
         sHealth     = _sHealth;
-        fMaxVel     = _fMaxVel;
+        fBulletSpeed= _fBSpeed;
         vActorModel = _vModel;
 
         // Always face forward;
@@ -70,7 +71,7 @@ class EnemyShooter : public Enemy{
             }
 
             // Shoot at player direction with no rand()
-            bMag[k].init(vLocation, vDirection, 1, shootingType, 24.0f);
+            bMag[k].init(vLocation, vDirection, 1, shootingType, fBulletSpeed);
             nLastFreeMag = k;
             fReloadCount = 0;
             // Change the bullet type if its mixed

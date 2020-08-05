@@ -94,14 +94,14 @@ class MVEngine : public VEngine{
 		mat4x4 matRot = matMakeRotationX(-1.396263);
 		camMain.ApplyRotation(matRot, camMain.getVecLocation());
 
-		camDevp.ApplyTranslation(vec3d(22.0f, -1.0f, 0.0f));
+		camDevp.ApplyTranslation(vec3d(22.0f, -2.0f, 0.0f));
 		vec3d pointToLeft(-1.0f, 0.0f, 0.0f);
 		pointToLeft += camDevp.getVecLocation();
 		camDevp.PointAt(pointToLeft);
 
 		for (int i = 0; i < 3; i++){
 			enemies.push_back(std::unique_ptr<EnemyFollower>(new EnemyFollower(FOLLOWER, vec2d(-5 + i * 5,-5 + i * 5), 3, 1.0f, &vmEnemy1)));
-			enemies.push_back(std::unique_ptr<EnemyShooter>(new EnemyShooter(SNIPER, vec2d(5, -5 + i * 5), 5, 5.0f, 0.3f, SHOOT_MIXED, &vmPlayer)));
+			enemies.push_back(std::unique_ptr<EnemyShooter>(new EnemyShooter(SNIPER, vec2d(5, -5 + i * 5), 5, 8.0f, 0.6f, SHOOT_DEST, &vmPlayer)));
 		}
 
 	}
@@ -112,6 +112,10 @@ class MVEngine : public VEngine{
 		float range = sqrtf(dx * dx + dy * dy);
 		return (range <= r);
 	}
+
+	inline bool in_range(vec2d& p1, vec2d& p2, float r){
+		return in_range(p1.x, p1.y, p2.x, p2.y, r);
+	}	
 
 	void append_scene_object(std::vector<vMesh>& mesh, BaseActor& actor){
 			vMesh enemy_mesh = *actor.getActorModel();
@@ -189,8 +193,10 @@ class MVEngine : public VEngine{
 				for (auto& blt : e->bMag){
 					if (blt.active){
 						sbl.push_back(vmPlyBlt);
-						sbl[sbl.size()-1].setLocation(vec3d(blt.blx, vmPlyBlt.getVecLocation().y, -blt.bly));
-						float fdirection = vec_to_rad(blt.bvx, -blt.bvy);
+						if(blt.mtype == BClass::DESTBE) sbl[sbl.size()-1].setColour(255, 151,  87);
+						if(blt.mtype == BClass::UNDEST) sbl[sbl.size()-1].setColour( 73,  74, 138);
+						sbl[sbl.size()-1].setLocation(vec3d(blt.vLoc.x, vmPlyBlt.getVecLocation().y, -blt.vLoc.y));
+						float fdirection = vec_to_rad(blt.vVel.x, -blt.vVel.y);
 
 						mat4x4 matrot = matMakeRotationY(fdirection);
 						sbl[sbl.size()-1].ApplyRotation(matrot, sbl[sbl.size()-1].getVecLocation());
@@ -206,17 +212,30 @@ class MVEngine : public VEngine{
 		for (auto& blt : pPlayer.mag){
 			if (blt.active){
 				sbl.push_back(vmPlyBlt);
-				sbl[sbl.size()-1].setLocation(vec3d(blt.blx, vmPlyBlt.getVecLocation().y, -blt.bly));
-				float fdirection = vec_to_rad(blt.bvx, -blt.bvy);
+				sbl[sbl.size()-1].setLocation(vec3d(blt.vLoc.x, vmPlyBlt.getVecLocation().y, -blt.vLoc.y));
+				float fdirection = vec_to_rad(blt.vVel.x, -blt.vVel.y);
 
 				mat4x4 matrot = matMakeRotationY(fdirection);
 				sbl[sbl.size()-1].ApplyRotation(matrot, sbl[sbl.size()-1].getVecLocation());
 
 				for(auto& e : enemies){
+					// if this enemy has bullets
+					if (e->getActorType() != Actor::FOLLOWER){
+						for(auto& ebullet : e->bMag){
+							if(!ebullet.active) continue;
+							if (in_range(blt.vLoc, ebullet.vLoc, 0.5f)){
+							//if (blt.intersect(ebullet)){
+								blt.active = false;
+								if (ebullet.mtype != BClass::UNDEST) ebullet.active = false;
+								break;
+							}
+						}
+					}
+
 					if (!e->isAlive()) continue;
+					if (!blt.active) break;
 						// check hit
-					if (in_range(blt.blx, blt.bly, e->getLocation().x,
-								 e->getLocation().y , 1.5f)){
+					if (in_range(blt.vLoc, e->getLocation(), 1.5f)){
 
 						blt.active = false;
 						e->damage(1);
