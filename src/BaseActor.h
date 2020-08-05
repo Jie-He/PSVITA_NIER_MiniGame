@@ -35,19 +35,15 @@ class BaseActor{
         // Maybe not
         vec2d  vVelocity;
 
+        vMesh* vActorModel;
+
     public:
         // Bullet stuff, 
         const int MAG_SIZE = 15; // [TODO Changing size]
         Bullet bMag[15];
         short nLastFreeMag{0};
     
-    /**    BaseActor(Actor _aType, vec2d _vLocation, short _sHealth=3, float _fFireRate=1.0f, float _fMaxVel=5.0f)
-                 : aType(_aType), sHealth(_sHealth), fFireRate(_fFireRate), fMaxVel(_fMaxVel){
-                     // Default direction pointing forward
-                     vDirection.x = 0; vDirection.y = -128;
-                     bAlive = true;
-                 }; **/
-        BaseActor() {bAlive = true;};
+        BaseActor() {bAlive = true; vActorModel = nullptr;};
 
         void update(float fElapsedTime){ 
             // Update the bullets even if dead.
@@ -64,17 +60,14 @@ class BaseActor{
             
         };        
         
-        bool damage(short){
-            sHealth--;
-            if (sHealth <= 0) bAlive = false;
-            return bAlive;
-        };
+        virtual bool damage(short){ return false;};
         virtual void firebt(){};
 
         // Getters
         vec2d& getLocation() {return vLocation;};
         vec2d& getDirection(){return vDirection;};
-    
+        vMesh* getActorModel(){return vActorModel;};
+        Actor& getActorType(){return aType;};
         bool isAlive() {return bAlive;};
 };
 
