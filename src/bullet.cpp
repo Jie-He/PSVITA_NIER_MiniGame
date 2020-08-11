@@ -33,8 +33,8 @@ void Bullet::update(float fElapsedTIme){
         vPre = vLoc;
         vLoc += (vVel * fElapsedTIme);
         // if out of bound, then deactivate.
-        //if (blx > SCREEN_WIDTH || blx < 0) active = false;
-        //if (bly > SCREEN_HEIGHT|| bly < 0) active = false;
+        if (vLoc.y > 20 || vLoc.y < -20) active = false;
+        if (vLoc.x > 20 || vLoc.x < -20) active = false;
         fLife += fElapsedTIme;
         if (fLife >= LIFETIME)
             active = false;
@@ -47,8 +47,8 @@ void Bullet::update(float fElapsedTIme){
 bool onSegment(vec2d& p, vec2d& q, vec2d& r) 
 { 
     using namespace std;
-    if (q.x <= max(p.x, r.x) && q.x >= min(p.x, r.x) && 
-        q.y <= max(p.y, r.y) && q.y >= min(p.y, r.y)) 
+    if (q.x <= max(p.x, r.x) && q.x <= min(p.x, r.x) && 
+        q.y <= max(p.y, r.y) && q.y <= min(p.y, r.y)) 
        return true; 
    
   
@@ -62,27 +62,27 @@ int orientation(vec2d& p, vec2d& q, vec2d& r){
   
     if (val == 0) return 0;  // colinear 
   
-    return (val > 0)? 1: 2; // clock or counterclock wise 
+    return (val > 0)? 2: 1; // clock or counterclock wise 
 } 
 
 // If the path of two bullets intersects
 bool Bullet::intersect(Bullet& target){
     
-    int o1 = orientation(vLoc, target.vLoc, vPre); 
-    int o2 = orientation(vLoc, target.vLoc, target.vPre); 
-    int o3 = orientation(vPre, target.vPre, vLoc); 
-    int o4 = orientation(vPre, target.vPre, target.vLoc); 
+    int o1 = orientation(vLoc, vPre, target.vLoc); 
+    int o2 = orientation(vLoc, vPre, target.vPre); 
+    int o3 = orientation(target.vLoc, target.vPre, vLoc); 
+    int o4 = orientation(target.vLoc, target.vPre, vPre); 
   
     if (o1 != o2 && o3 != o4) 
         return true; 
   
     if (o1 == 0 && onSegment(vLoc, vPre, target.vLoc)) return true; 
   
-    if (o2 == 0 && onSegment(vLoc, target.vPre, target.vLoc)) return true; 
+    if (o2 == 0 && onSegment(vLoc, vPre, target.vPre)) return true; 
   
-    if (o3 == 0 && onSegment(vPre, vLoc, target.vPre)) return true; 
+    if (o3 == 0 && onSegment(target.vLoc, target.vPre, vLoc)) return true; 
   
-    if (o4 == 0 && onSegment(vPre, target.vLoc, target.vPre)) return true; 
+    if (o4 == 0 && onSegment(target.vLoc, target.vPre, vPre)) return true; 
   
     return false; 
 }

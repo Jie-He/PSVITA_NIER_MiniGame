@@ -10,7 +10,7 @@ if (OPENCV)
     cmake_minimum_required(VERSION 2.8)
     project( VEngine_Demo )
 
-    SET(GCC_COVERAGE_COMPILE_FLAGS "-D OPENCV -Wno-deprecated")
+    SET(GCC_COVERAGE_COMPILE_FLAGS "-D OPENCV -Wno-deprecated -O2")
     
     find_package( OpenCV REQUIRED )
     add_executable( NierAH ${VE_SOURCE})
@@ -102,11 +102,15 @@ elseif(PSVITA)
     
     FILE res/E_1.obj res/E_1.obj
     FILE res/E_1.mtl res/E_1.mtl
+    FILE res/E_HammerHead.obj res/E_HammerHead.obj
+    FILE res/E_HammerHead.mtl res/E_HammerHead.mtl
     FILE res/Ground_Plane.obj res/Ground_Plane.obj
     FILE res/Ground_Plane.mtl res/Ground_Plane.mtl
     FILE res/main_pointer.obj res/main_pointer.obj
     FILE res/main_pointer.mtl res/main_pointer.mtl
     FILE res/player_bullet.obj res/player_bullet.obj
+    FILE res/sphere.mtl res/sphere.mtl
+    FILE res/sphere.obj res/sphere.obj
     )
 
 else()

@@ -19,7 +19,7 @@ class Bullet{
         //float bvx, bvy;
         float unitx, unity;
         // temp 3 second life
-        const float LIFETIME = 2.5f;
+        const float LIFETIME = 5.0f;
         float fLife;
 
         BClass mtype;

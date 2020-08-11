@@ -6,13 +6,21 @@
 #include "Enemy.h"
 
 class EnemyFollower : public Enemy{
+    private:
+        bool do_damage(){
+            sHealth--; 
+            if (sHealth <= 0) bAlive = false;
+            return bAlive;
+        }
+
     public:
         EnemyFollower(Actor _aType, vec2d _vLocation, 
-                      short _sHealth=3, float _fMaxVel=5.0f, vMesh* _vModel = nullptr){
+                      short _sHealth=3, float _fMaxVel=5.0f, vMesh* _vModel = nullptr, float _fAngV = 0.785398){
             aType       = _aType;
             vLocation   = _vLocation;
             sHealth     = _sHealth;
             fMaxVel     = _fMaxVel;
+            fAngularV   = _fAngV;
             vActorModel = _vModel;
 
             // Always face forward;
@@ -22,30 +30,38 @@ class EnemyFollower : public Enemy{
             bAlive = true;
         }
 
-        void update(float fElapsedTime, vec2d vPlayerLoc) override{
+        void update(float fElapsedTime, BaseActor& vPlayer) override{
             BaseActor::update(fElapsedTime);
     
             if (!bAlive) return;
             // set the vDirection to vPlayer
-            vDirection.x = vPlayerLoc.x - vLocation.x;
-            vDirection.y = vPlayerLoc.y - vLocation.y;
-            vDirection = vecNormalise(vDirection);
+            point_player( fElapsedTime, vPlayer.getLocation());
             // Also set velocity to player
-            vVelocity.x  = vDirection.x;
-            vVelocity.y  = vDirection.y;
+            vVelocity  = vDirection;
             // Scale the velocity to fMaxVel
-            vVelocity.x *= fMaxVel;
-            vVelocity.y *= fMaxVel;
+            vVelocity *= fMaxVel;
         }
         // Does no firing
         void firebt() override{
             // Do nothing
         };
 
-        bool damage(short) override{
-            sHealth--;
-            if (sHealth <= 0) bAlive = false;
+        bool damage(short k, Bullet& b) override{
+            // Doesnt need Bullet info
+            if (aType == Actor::FOLLOWER){
+                do_damage();
+            }else{ // A Hammer Head type
+                // Calc bullet angle
+                vec2d temp = b.vVel;
+                // Calc the smallest radian
+                float fTheta = std::acos(temp.dot(vDirection) / (temp.length() * vDirection.length()));
+                
+                // if the bullet enters at greater than 45 degrees
+                // do damage
+                if (std::abs(fTheta) <= 2.356194) 
+                    do_damage();
+            }
             return bAlive;
         };
 };
-#endif//_E_FOLLOWER;
+#endif//_E_FOLLOWER_;
