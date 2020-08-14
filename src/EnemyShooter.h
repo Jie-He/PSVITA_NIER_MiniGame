@@ -54,6 +54,8 @@ class EnemyShooter : public Enemy{
             if (spPattern == SHOOT_UDET) shootingType = UNDEST; 
 
             fdFireControl.nCNLimit = _fFireRate;
+            eParent = nullptr;
+            nLiveChildCount=0;
             //fFireRate = _fFireRate;
             bAlive = true;
         }

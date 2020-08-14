@@ -9,7 +9,12 @@ class EnemyFollower : public Enemy{
     private:
         bool do_damage(){
             sHealth--; 
-            if (sHealth <= 0) bAlive = false;
+            if (sHealth <= 0)
+            {
+                bAlive = false;
+                if (eParent)
+                    (*eParent)->call_parent_on_dead();
+            }
             return bAlive;
         }
 
@@ -28,6 +33,9 @@ class EnemyFollower : public Enemy{
             vDirection.x = 0;
 
             bAlive = true;
+
+            // Set parent = null ptr
+            eParent = nullptr;
         }
 
         void update(float fElapsedTime, BaseActor& vPlayer) override{

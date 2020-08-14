@@ -6,8 +6,9 @@
 #include "Enemy.h"
 #include "EnemyFollower.h"
 #include "EnemyShooter.h"
+#include "EnemyParent.h"
 #include "bullet.h"
-
+#include "Wall.h"
 // [TODO]
 // struct SceneEntity
 // {
@@ -20,24 +21,30 @@ class MVEngine : public VEngine{
 	private: 
 		vCamera camMain = vCamera(SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0.1f, 2.0f, 45.0f);
 		vCamera camDevp = vCamera(200, 200, 740, 324, 0.1f, 100.0f,120.0f);
-		//vCamera camDevp = vCamera(400, 400, 540, 124, 0.1f, 100.0f,120.0f);
-		//std::vector<vMesh> scene;
+		
+		// Store all the mesh we are going to use 
 		vMesh vmPlayer;
 		vMesh vmEnemy1;
 		vMesh vmEnemy2; // Sphere . ... 75 tris.
 		vMesh vmEnemy3; // Hammer Head
 		vMesh vmGround;
 		vMesh vmPlyBlt;
-		// Actors
-		//Player pPlayer = Player(0, 10, 10.0f, 0.05f);
-		APlayer pPlayer = APlayer(Actor::PLAYER, vec2d(0.0f, -5.0f), 3, 16.0f, 0.05f, &vmPlayer);
+
+		// Generate the walls
+		vMesh wall_WHT, wall_BLC, wall_RED;
+		
+		APlayer pPlayer = APlayer(Actor::PLAYER, vec2d(0.0f, -5.0f), 3, 16.0f, 0.05f, &vmEnemy1);
 
 		std::vector<std::unique_ptr<Enemy>> enemies;
+		std::vector<Wall> walls_back_side;
+		std::vector<Wall> walls_front;
 
 		inline std::unique_ptr<EnemyFollower> E_Follower(int a, int b) 					{return std::unique_ptr<EnemyFollower>(new EnemyFollower(Actor::FOLLOWER,   vec2d( a, b), 3, 1.0f, &vmEnemy1));			};
 		inline std::unique_ptr<EnemyFollower> E_HammerHd(int a, int b) 					{return std::unique_ptr<EnemyFollower>(new EnemyFollower(Actor::HAMMERHEAD, vec2d( a, b), 3, 1.0f, &vmEnemy3));			};
-		inline std::unique_ptr<EnemyShooter>  E_Shooter (int a, int b, ShootPattern c) 	{return std::unique_ptr<EnemyShooter> (new EnemyShooter (Actor::SHOTGUN,    vec2d( a, b), 5, 5.0f, 0.6f, c, &vmEnemy2));};
-
+		inline std::unique_ptr<EnemyShooter > E_ShooterG(int a, int b, ShootPattern c) 	{return std::unique_ptr<EnemyShooter> (new EnemyShooter (Actor::SHOTGUN,    vec2d( a, b), 5, 5.0f, 0.6f, c, &vmEnemy2));};
+		inline std::unique_ptr<EnemyShooter > E_ShooterS(int a, int b, ShootPattern c) 	{return std::unique_ptr<EnemyShooter> (new EnemyShooter (Actor::SNIPER,     vec2d( a, b), 5, 5.0f, 0.6f, c, &vmEnemy2));};
+		inline std::unique_ptr<EnemyParent  > E_PARENT  (int a, int b, ShootPattern c) 	{return std::unique_ptr<EnemyParent > (new EnemyParent  (Actor::SHOTGUN,    vec2d( a, b), 5, 5.0f, 0.6f, c, &wall_RED));};
+		
 		// Given a 2d vector, return the radians from anticlockwise
 		float vec_to_rad(float ax, float ay){
 			// Assuming the heading is always (0, 1)
@@ -62,7 +69,7 @@ class MVEngine : public VEngine{
 			bLighting = true;
 			// Change world colour
 			world_colour = vec3d(76, 72, 60);
-			
+
 			#ifdef OPENCV
 			vmPlayer.LoadFromObjectFile("../res/main_pointer.obj"	);
 			vmEnemy1.LoadFromObjectFile("../res/E_1.obj"			);
@@ -70,6 +77,9 @@ class MVEngine : public VEngine{
 			vmEnemy3.LoadFromObjectFile("../res/E_HammerHead.obj"	);
 			vmGround.LoadFromObjectFile("../res/Ground_Plane.obj"	);
 			vmPlyBlt.LoadFromObjectFile("../res/player_bullet.obj"	);
+			wall_WHT.LoadFromObjectFile("../res/cubeX8.obj"         );
+			wall_BLC.LoadFromObjectFile("../res/cubeX8.obj"         );
+			wall_RED.LoadFromObjectFile("../res/cubeX8.obj"         );
 			#endif
 
 			#ifdef PSVITA
@@ -79,6 +89,9 @@ class MVEngine : public VEngine{
 			vmEnemy3.LoadFromObjectFile("app0:/res/E_HammerHead.obj" );
 			vmGround.LoadFromObjectFile("app0:/res/Ground_Plane.obj" );
 			vmPlyBlt.LoadFromObjectFile("app0:/res/player_bullet.obj");
+			wall_WHT.LoadFromObjectFile("app0:/res/cubeX8.obj"       );
+			wall_BLC.LoadFromObjectFile("app0:/res/cubeX8.obj"       );
+			wall_RED.LoadFromObjectFile("app0:/res/cubeX8.obj"       );
 			#endif
 
 			// Translate the mesh properly along the y axis
@@ -97,16 +110,38 @@ class MVEngine : public VEngine{
 			pointToLeft += camDevp.getVecLocation();
 			camDevp.PointAt(pointToLeft);
 
+
+			enemies.push_back(E_PARENT(-5, -5, ShootPattern::SHOOT_MIXED));
+
 			for (int i = 0; i < 3; i++){
 				enemies.push_back(E_Follower(-5 + i * 5, -5 + i * 5));
 				enemies.push_back(E_HammerHd(-3 + i * 3, -3 + i * 3));
 			}
+
 			for (int i = 0; i < 2; i++){
-				enemies.push_back(E_Shooter(-2+i*4, -2+i*4, ShootPattern::SHOOT_DEST));
+				enemies.push_back(E_ShooterG(-2+i*4, -2+i*4, ShootPattern::SHOOT_DEST));
 			}
-				enemies.push_back(E_Shooter(-2, -2, ShootPattern::SHOOT_MIXED));
+				enemies.push_back(E_ShooterS(-2, -2, ShootPattern::SHOOT_MIXED));
+
+			for (int i = 2; i < 7; i+=2){
+				enemies[i]->set_parent(&enemies[0]);
+			}
 			
-			
+			// Set up the demo walls
+			// Set colour first
+			wall_WHT.setColour(255, 255, 255);
+			wall_BLC.setColour( 21,  21,  21);
+			wall_RED.setColour(224,   0,   0);
+
+			// Generate the front set thats 22 of them
+			int w = 0;
+			for (w = 0; w < 22; w++){
+				walls_front.push_back(Wall(WALL_TYPE::WHT_WALL, wall_WHT, vec3d(-20.0f + w * 2, -0.8f, -20.8f)));
+			}
+			// Generate the back set of walls
+			for (w = 0; w < 22; w++){
+				walls_back_side.push_back(Wall(WALL_TYPE::WHT_WALL, wall_RED, vec3d(-20.0f + w * 2, -0.8f,  20.8f)));
+			}
 		}
 
 		inline bool in_range(float ax, float ay, float bx, float by, float r){
@@ -269,15 +304,30 @@ class MVEngine : public VEngine{
 				}
 			}
 
+			// Collect the ground wall
+			std::vector<vMesh*> walls_b;
+			std::vector<vMesh*> walls_f;
+			for (auto& w : walls_back_side){
+				if (w.isAlive()) walls_b.push_back(w.getMesh());
+			}
+			for (auto& w : walls_front){
+				if (w.isAlive()) walls_f.push_back(w.getMesh());
+			}
+
+
 			// Draw the scene
 			draw_mesh(camMain, vmGround);
+			draw_scene(camMain, walls_b);
 			draw_scene(camMain, svv);
 			draw_scene(camMain, sbl);
+			draw_scene(camMain, walls_f);
 			
 			#ifdef OPENCV
-			draw_mesh(camDevp, vmGround);
+			camDevp.SetLocation(vec3d(camDevp.getVecLocation().x, camDevp.getVecLocation().y, -pPlayer.getLocation().y));
+			draw_scene(camDevp, walls_b);
 			draw_scene(camDevp, svv);
 			draw_scene(camDevp, sbl);
+			draw_scene(camDevp, walls_f);
 			#endif
 
 			#ifdef OPENCV
@@ -313,7 +363,6 @@ class MVEngine : public VEngine{
 				cv::putText(canvas, buff, cv::Point(pt1.x + 5, pt1.y - 5),
 						cv::FONT_HERSHEY_DUPLEX, 0.5, CV_RGB(255,  0,255), 1);
 			}
-
 			#endif
 		}
 };
