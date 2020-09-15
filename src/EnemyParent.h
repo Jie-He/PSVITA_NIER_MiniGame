@@ -26,14 +26,11 @@ class EnemyParent : public EnemyShooter{
             
        ~EnemyParent(){};
 
-        bool damage(short, Bullet) {
-            #ifdef OPENCV
-            std::cout << "Calling at Parent thou" << std::endl;
-            #endif
-
+        bool damage(short k, Bullet& b) {
             // If there are still children then just return true
-            if (!nLiveChildCount) {
+            if (nLiveChildCount) {
                 // How about also increasing fire rate?
+                // when the child still alive
                 fdFireControl.nCNLimit *= 0.5f; // 2x faster?
                 return bAlive;
             }

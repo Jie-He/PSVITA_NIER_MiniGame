@@ -86,6 +86,12 @@ class BaseActor{
             vLocation.x += vVelocity.x * fElapsedTime;
             vLocation.y += vVelocity.y * fElapsedTime;
 
+            // TEMP check bound
+            vLocation.x = (vLocation.x < -20)? -20 : vLocation.x;
+            vLocation.y = (vLocation.y < -20)? -20 : vLocation.y;
+            vLocation.x = (vLocation.x >  20)?  20 : vLocation.x;
+            vLocation.y = (vLocation.y >  20)?  20 : vLocation.y;
+
             // fire enabler
             //fReloadCount = (fReloadCount >= fFireRate)? fFireRate : (fReloadCount + fElapsedTime);
             fdFireControl.tick(fElapsedTime);

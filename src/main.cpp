@@ -15,10 +15,20 @@
 	
 // };
 
+enum GAME_STATE{
+	GAMING,
+	MAINMENU,
+	PASUEMENU,
+	LEVELMENU,
+	SCOREMENU,
+};
+
 
 class MVEngine : public VEngine{
 
 	private: 
+		GAME_STATE gState;
+
 		vCamera camMain = vCamera(SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 0.1f, 2.0f, 45.0f);
 		vCamera camDevp = vCamera(200, 200, 740, 324, 0.1f, 100.0f,120.0f);
 		
@@ -45,24 +55,7 @@ class MVEngine : public VEngine{
 		inline std::unique_ptr<EnemyShooter > E_ShooterS(int a, int b, ShootPattern c) 	{return std::unique_ptr<EnemyShooter> (new EnemyShooter (Actor::SNIPER,     vec2d( a, b), 5, 5.0f, 0.6f, c, &vmEnemy2));};
 		inline std::unique_ptr<EnemyParent  > E_PARENT  (int a, int b, ShootPattern c) 	{return std::unique_ptr<EnemyParent > (new EnemyParent  (Actor::SHOTGUN,    vec2d( a, b), 5, 5.0f, 0.6f, c, &wall_RED));};
 		
-		// Given a 2d vector, return the radians from anticlockwise
-		float vec_to_rad(float ax, float ay){
-			// Assuming the heading is always (0, 1)
-			float vecMagtd = sqrtf(ax * ax + ay * ay);
-			float cosTheta = ay / (vecMagtd);
-			float rad = acosf(cosTheta);
-
-			// if on the right, do 2pi - rad
-			if (ax > 0)
-				return 6.283185 - rad;
-
-			return rad;
-		}
-
-		float vec_to_rad(vec2d& v){
-			return vec_to_rad(v.x, -v.y);
-		}
-
+		// Load all the game assets before level creation
 		void onCreate() override{
 			// Turn on shatty lighting
 			vecLight = vec3d(0.0f, -1000.0f, 0.0f);
@@ -105,27 +98,35 @@ class MVEngine : public VEngine{
 			mat4x4 matRot = matMakeRotationX(-(60.0f / 180.0f * 3.14159));
 			camMain.ApplyRotation(matRot, camMain.getVecLocation());
 
-			camDevp.ApplyTranslation(vec3d(22.0f, -2.0f, 0.0f));
+			camDevp.ApplyTranslation(vec3d(22.0f, -10.0f, 0.0f));
 			vec3d pointToLeft(-1.0f, 0.0f, 0.0f);
 			pointToLeft += camDevp.getVecLocation();
 			camDevp.PointAt(pointToLeft);
-
 
 			enemies.push_back(E_PARENT(-5, -5, ShootPattern::SHOOT_MIXED));
 
 			for (int i = 0; i < 3; i++){
 				enemies.push_back(E_Follower(-5 + i * 5, -5 + i * 5));
-				enemies.push_back(E_HammerHd(-3 + i * 3, -3 + i * 3));
 			}
 
-			for (int i = 0; i < 2; i++){
-				enemies.push_back(E_ShooterG(-2+i*4, -2+i*4, ShootPattern::SHOOT_DEST));
-			}
-				enemies.push_back(E_ShooterS(-2, -2, ShootPattern::SHOOT_MIXED));
-
-			for (int i = 2; i < 7; i+=2){
+			for (int i = 1; i < 4; i++){
 				enemies[i]->set_parent(&enemies[0]);
 			}
+
+
+			// for (int i = 0; i < 3; i++){
+			// 	enemies.push_back(E_Follower(-5 + i * 5, -5 + i * 5));
+			// 	enemies.push_back(E_HammerHd(-3 + i * 3, -3 + i * 3));
+			// }
+
+			// for (int i = 0; i < 2; i++){
+			// 	enemies.push_back(E_ShooterG(-2+i*4, -2+i*4, ShootPattern::SHOOT_DEST));
+			// }
+			// 	enemies.push_back(E_ShooterS(-2, -2, ShootPattern::SHOOT_MIXED));
+
+			// for (int i = 2; i < 7; i+=2){
+			// 	enemies[i]->set_parent(&enemies[0]);
+			// }
 			
 			// Set up the demo walls
 			// Set colour first
@@ -142,8 +143,28 @@ class MVEngine : public VEngine{
 			for (w = 0; w < 22; w++){
 				walls_back_side.push_back(Wall(WALL_TYPE::WHT_WALL, wall_RED, vec3d(-20.0f + w * 2, -0.8f,  20.8f)));
 			}
+
+			gState = GAME_STATE::MAINMENU;
 		}
 
+				// Given a 2d vector, return the radians from anticlockwise
+		float vec_to_rad(float ax, float ay){
+			// Assuming the heading is always (0, 1)
+			float vecMagtd = sqrtf(ax * ax + ay * ay);
+			float cosTheta = ay / (vecMagtd);
+			float rad = acosf(cosTheta);
+
+			// if on the right, do 2pi - rad
+			if (ax > 0)
+				return 6.283185 - rad;
+
+			return rad;
+		}
+
+		float vec_to_rad(vec2d& v){
+			return vec_to_rad(v.x, -v.y);
+		}
+		
 		inline bool in_range(float ax, float ay, float bx, float by, float r){
 			float dx = ax - bx;
 			float dy = ay - by;
@@ -166,7 +187,13 @@ class MVEngine : public VEngine{
 				mesh.push_back(enemy_mesh);
 		}
 
-		void update(float fElapsedTime) override{
+		// After selecting a level, load the config
+		void load_level(){
+
+		}
+
+		// Run game stuff
+		void disp_game(float fElapsedTime){
 			std::vector<vMesh> svv; // All Actor objects here
 			std::vector<vMesh> sbl; // All bullets here
 		
@@ -323,7 +350,10 @@ class MVEngine : public VEngine{
 			draw_scene(camMain, walls_f);
 			
 			#ifdef OPENCV
+
+			// Set Z location the same as player
 			camDevp.SetLocation(vec3d(camDevp.getVecLocation().x, camDevp.getVecLocation().y, -pPlayer.getLocation().y));
+			
 			draw_scene(camDevp, walls_b);
 			draw_scene(camDevp, svv);
 			draw_scene(camDevp, sbl);
@@ -342,9 +372,9 @@ class MVEngine : public VEngine{
 				pt3 = pt3 - pt1;
 				float l = sqrtf(pt3.x * pt3.x + pt3.y * pt3.y);
 
-				//cv::line(canvas, cv::Point(pt1.x, pt1.y), cv::Point(pt2.x, pt2.y),
-				//		cv::Scalar(0,0,255), 2);
-				//cv::circle(canvas, cv::Point(pt1.x, pt1.y), l, cv::Scalar(255,0,0));
+				cv::line(canvas, cv::Point(pt1.x, pt1.y), cv::Point(pt2.x, pt2.y),
+						cv::Scalar(0,0,255), 2);
+				cv::circle(canvas, cv::Point(pt1.x, pt1.y), l, cv::Scalar(255,0,0));
 			
 			}
 
@@ -365,6 +395,77 @@ class MVEngine : public VEngine{
 			}
 			#endif
 		}
+
+		// Got menu
+		// Pick level or exit game. maybe high score too
+		void disp_menu(float fElapsedTime){
+			// if J key (keyboard) or the X button (vita) is pressed
+			// Straight to game mode
+			#ifdef OPENCV
+
+			cv::putText(canvas, "DISP_MENU", cv::Point(20, 200),
+                cv::FONT_HERSHEY_DUPLEX,
+                0.5, CV_RGB(0,0,0), 2);
+			std::cout << "DISP_MENU" << std::endl;
+
+			if (keypress == 74 || keypress == 106) gState = GAME_STATE::LEVELMENU;
+			#endif
+			#ifdef PSVITA
+			vita2d_font_draw_text(font, 20, 200, WHITE, 21, "DISP_MENU");
+			if (ctrl.buttons & SCE_CTRL_CROSS) gState = GAME_STATE::LEVELMENU;
+			#endif
+			
+		}
+
+		// Let player chose level to play
+		// or back to main menu
+		void disp_level(float fElapsedTime){
+			
+
+			#ifdef OPENCV
+			cv::putText(canvas, "DISP_LEVEL", cv::Point(20, 200),
+                cv::FONT_HERSHEY_DUPLEX,
+                0.5, CV_RGB(0,0,0), 2);
+			std::cout << "DISP_LEVEL" << std::endl;
+
+			if (keypress == 74 || keypress == 106) {
+				load_level();
+				gState = GAME_STATE::GAMING;
+			}
+			if (keypress == 75 || keypress == 107) gState = GAME_STATE::MAINMENU;
+			#endif
+			#ifdef PSVITA
+			vita2d_font_draw_text(font, 20, 200, WHITE, 21, "DISP_LEVEL");
+
+			if (ctrl.buttons & SCE_CTRL_CROSS) {
+				load_level(); // TODO
+				gState = GAME_STATE::GAMING;
+			}
+
+			if (ctrl.buttons & SCE_CTRL_CIRCLE) gState = GAME_STATE::MAINMENU;
+			#endif
+		}
+
+		// pause screen
+		// can exit to level/main menu
+		void disp_pause(float fElapsedTime){
+
+		}
+
+		// After game finish, display then switch to level selection
+		void disp_score(float fElapsedTime){
+
+		}
+		
+		void update(float fElapsedTime) override{
+			if     ( gState == GAME_STATE::GAMING    ) disp_game  (fElapsedTime);
+			else if( gState == GAME_STATE::MAINMENU  ) disp_menu  (fElapsedTime);
+			else if( gState == GAME_STATE::LEVELMENU ) disp_level (fElapsedTime);
+			else if( gState == GAME_STATE::PASUEMENU ) disp_pause (fElapsedTime);
+			else if( gState == GAME_STATE::SCOREMENU ) disp_score (fElapsedTime);			
+		}
+
+
 };
 
 int main(int argc, char *argv[]) {

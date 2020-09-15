@@ -94,8 +94,11 @@ class EnemyShooter : public Enemy{
             }
         };
 
-        bool damage(short k, Bullet& b) override{
+        bool damage(short k, Bullet& b){
             // Dont need Bullet info for this one
+            #ifdef OPENCV
+                std::cout << "SHOOTER DAMAGE..." << std::endl;
+            #endif
             sHealth--; 
             if (sHealth <= 0) bAlive = false;
             return bAlive;

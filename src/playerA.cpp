@@ -45,11 +45,6 @@ void APlayer::update(int clx, int cly, int crx, int cry, bool fire, float fElaps
 
     // Call base update
     BaseActor::update(fElapsedTime);
-    // check player bound
-	vLocation.x = (vLocation.x < -20)? -20 : vLocation.x;
-	vLocation.y = (vLocation.y < -20)? -20 : vLocation.y;
-	vLocation.x = (vLocation.x >  20)?  20 : vLocation.x;
-	vLocation.y = (vLocation.y >  20)?  20 : vLocation.y;
 
     // Deceleration
     // [TODO]
@@ -59,7 +54,7 @@ void APlayer::update(int clx, int cly, int crx, int cry, bool fire, float fElaps
     
     if (vVelocity.x != 0.0f) vVelocity.x -= (((vVelocity.x > 0)? fAcceleration : -fAcceleration)/2);
     if (vVelocity.y != 0.0f) vVelocity.y -= (((vVelocity.y > 0)? fAcceleration : -fAcceleration)/2);
-
+    
     // Update bullet
     for(auto& b : bMag) b.update(fElapsedTime);
     if(fire) firebt();
